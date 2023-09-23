@@ -39,6 +39,18 @@
       border: 2px solid black;
       border-radius: 20px;
       padding: 10px;
+      transition: border-color 0.5s ease;
+    }
+    
+    /* 暗黑模式样式定义 */
+    body.dark-mode {
+      background-color: #000000;
+      color: #ffffff;
+    }
+
+    /* 边框颜色在暗黑模式下更改为白色 */
+    body.dark-mode .rounded-border {
+      border-color: #FFFFFF;
     }
   </style>
   <script>
@@ -46,22 +58,26 @@
       "en": {
         "welcomeText": "Welcome to My Website!",
         "toggleButton": "Toggle Language",
+        "toggleDarkMode":"Toggle Mode",
         "introHeading": "Introduction",
         "introContent": "This is a simple website.",
         "aboutHeading": "About Us",
         "aboutContent": "Here is our content about us.",
-        "footerText": "© 2023 Manisyourdad'website. All rights reserved."
+        "footerText": "© 2023 Manisyourdad. All rights reserved."
       },
       "zh-CN": {
         "welcomeText": "欢迎来到我的网站！",
         "toggleButton": "切换语言",
+        "toggleDarkMode":"切换模式",
         "introHeading": "简介",
         "introContent": "这是一个简单的网站。",
         "aboutHeading": "关于我们",
         "aboutContent": "这是关于我们的内容。",
-        "footerText": "© 2023 Manisyourdad的网站。保留所有权利。"
+        "footerText": "© 2023 Manisyourdad. All rights reserved."
       }
     };
+
+    var darkMode = false; // 初始模式为亮色模式
 
     function toggleLanguage() {
       var currentLang = document.documentElement.lang;
@@ -73,6 +89,18 @@
         document.documentElement.lang = "en";
       }
       updateText();
+    }
+
+    function toggleDarkMode() {
+      darkMode = !darkMode; // 切换模式状态
+    
+      if (darkMode) {
+        // 切换到暗黑模式
+        document.body.classList.add("dark-mode");
+      } else {
+        // 切换到亮色模式
+        document.body.classList.remove("dark-mode");
+      }
     }
 
     function updateText() {
@@ -95,6 +123,11 @@
     <h1 id="welcome-text" class="rounded-border">Welcome to My Website!</h1>
     <li> <a href="https://github.com" class="link">Github</a></li>
     <li> <a href="https://www.bing.com" class="link">Bing</a> </li>
+    <li> <a href="https://c.binjie.fun" class="link">ChatGPT</a> </li>
+    <li> <a href="https://thebyrut.org" class="link">Byrut</a> </li>
+    <li> <a href="https://store.steampowered.com/" class="link">Steam</a> </li>
+    <li> <a href="https://store.epicgames.com/zh-CN/" class="link">Epic</a> </li>
+    <li> <a href="https://www.rockstargames.com/" class="link">Rockstargames</a> </li>
   </header>
 
   <section>
@@ -109,7 +142,9 @@
 
   <footer>
     <button id="toggle-button" onclick="toggleLanguage()" class="rounded-border">Toggle Language</button>
-    <p id="footer-text" class="rounded-border">&copy; 2023 My Website. All rights reserved.</p>
+
+    <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="rounded-border">Toggle Mode</button>
+    <p id="footer-text" class="rounded-border">&copy; 2023 manisyourdad. All rights reserved.</p>
   </footer>
 
   <script>
