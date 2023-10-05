@@ -13,7 +13,6 @@
       height: 100vh;
       margin: 0;
       overflow-y: scroll;
-
     }
 
     header,
@@ -56,6 +55,48 @@
     }
   </style>
   <script>
+    var languages = [
+      {
+        code: "en",
+        name: "English"
+      },
+      {
+        code: "zh-CN",
+        name: "中文"
+      },
+      {
+        code: "de",
+        name: "Deutsch"
+      },
+      {
+        code: "fr",
+        name: "Français"
+      },
+      {
+        code: "ru",
+        name: "Русский"
+      },
+      {
+        code: "ja",
+        name: "日本語"
+      }
+    ];
+    
+    function toggleLanguage() {
+      var currentLang = document.documentElement.lang;
+      var currentIndex = languages.findIndex(function(lang) {
+        return lang.code === currentLang;
+      });
+      var nextIndex = (currentIndex + 1) % languages.length;
+      var nextLang = languages[nextIndex];
+    
+      document.documentElement.lang = nextLang.code;
+      updateText();
+      document.getElementById("toggle-button").innerText = nextLang.name;
+    }
+    </script>
+    
+  <script>
     var content = {
       "en": {
         "welcomeText": "Welcome to My Website!",
@@ -76,31 +117,75 @@
         "aboutHeading": "关于我们",
         "aboutContent": "这是关于我们的内容。",
         "footerText": "© 2023 Manisyourdad. All rights reserved."
+      },
+      "de": {
+        "welcomeText": "Willkommen auf meiner Website!",
+        "toggleButton": "Sprache umschalten",
+        "toggleDarkMode": "Modus wechseln",
+        "introHeading": "Einführung",
+        "introContent": "Dies ist eine einfache Webseite.",
+        "aboutHeading": "Über uns",
+        "aboutContent": "Hier ist unser Inhalt über uns.",
+        "footerText": "© 2023 Manisyourdad. Alle Rechte vorbehalten."
+      },
+      "fr": {
+        "welcomeText": "Bienvenue sur mon site web !",
+        "toggleButton": "Changer de langue",
+        "toggleDarkMode": "Changer de mode",
+        "introHeading": "Introduction",
+        "introContent": "Il s'agit d'un simple site web.",
+        "aboutHeading": "À propos de nous",
+        "aboutContent": "Voici notre contenu à notre sujet.",
+        "footerText": "© 2023 Manisyourdad. Tous droits réservés."
+      },
+      "ru": {
+        "welcomeText": "Добро пожаловать на мой сайт!",
+        "toggleButton": "Переключить язык",
+        "toggleDarkMode":"Переключить режим",
+        "introHeading": "Введение",
+        "introContent": "Это простой веб-сайт.",
+        "aboutHeading": "О нас",
+        "aboutContent": "Вот наш контент о нас.",
+        "footerText": "© 2023 Manisyourdad. Все права защищены."
+      },
+      "ja": {
+        "welcomeText": "私のウェブサイトへようこそ！",
+        "toggleButton": "言語切り替え",
+        "toggleDarkMode":"モード切り替え",
+        "introHeading": "紹介",
+        "introContent": "これはシンプルなウェブサイトです。",
+        "aboutHeading": "私たちについて",
+        "aboutContent": "ここに私たちに関する内容があります。",
+        "footerText": "© 2023 Manisyourdad. All rights reserved."
       }
     };
 
-    var darkMode = false; // 初始模式为亮色模式
+    var darkMode = false;
 
     function toggleLanguage() {
       var currentLang = document.documentElement.lang;
       if (currentLang === "en") {
-        // 切换为中文
         document.documentElement.lang = "zh-CN";
+      } else if (currentLang === "zh-CN") {
+        document.documentElement.lang = "de";
+      } else if (currentLang === "de") {
+        document.documentElement.lang = "fr";
+      } else if (currentLang === "fr") {
+        document.documentElement.lang = "ru";
+      } else if (currentLang === "ru") {
+        document.documentElement.lang = "ja";
       } else {
-        // 切换为英文
         document.documentElement.lang = "en";
       }
       updateText();
     }
 
     function toggleDarkMode() {
-      darkMode = !darkMode; // 切换模式状态
-    
+      darkMode = !darkMode;
+
       if (darkMode) {
-        // 切换到暗黑模式
         document.body.classList.add("dark-mode");
       } else {
-        // 切换到亮色模式
         document.body.classList.remove("dark-mode");
       }
     }
@@ -109,9 +194,9 @@
       var lang = document.documentElement.lang;
       var langContent = content[lang];
 
-      // 更新文本内容
       document.getElementById("welcome-text").innerText = langContent.welcomeText;
       document.getElementById("toggle-button").innerText = langContent.toggleButton;
+      document.getElementById("dark-mode-toggle").innerText = langContent.toggleDarkMode;
       document.getElementById("intro-heading").innerText = langContent.introHeading;
       document.getElementById("intro-content").innerText = langContent.introContent;
       document.getElementById("about-heading").innerText = langContent.aboutHeading;
@@ -119,21 +204,22 @@
       document.getElementById("footer-text").innerText = langContent.footerText;
     }
   </script>
+  
 </head>
 <body oncontextmenu="return false;">
   <script>
     document.onkeydown = function(e) {
-    if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) { 
+      if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) { 
         return false;
-    }
-};
+      }
+    };
   </script>
 
   <script>
-  setInterval(function() {
+    setInterval(function() {
       if (window.outerWidth - window.innerWidth > 100 || window.outerHeight - window.innerHeight > 100) {
       }
-  }, 1000);
+    }, 1000);
 
   </script>
 
@@ -159,16 +245,12 @@
   </section>
 
   <footer>
-    <button id="toggle-button" onclick="toggleLanguage()" class="rounded-border">Toggle Language</button>
-
+    <button id="toggle-button" onclick="toggleLanguage()" class="rounded-border">English</button>
     <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="rounded-border">Toggle Mode</button>
     <p id="footer-text" class="rounded-border">&copy; 2023 manisyourdad. All rights reserved.</p>
   </footer>
 
   <script>
-    //页面加载时更新文本内容
-    //你看什么
-    //manisyourdad
     updateText();
   </script>
 </body>
