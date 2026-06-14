@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高考倒计时 — 破晓</title>
+<style>
+  /* ===== CSS Reset & Base ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --color-deep: #0a0a1a;
+    --color-night: #111130;
+    --color-twilight: #1c1c4a;
+    --color-dawn: #3d2e5c;
+    --color-horizon: #7a5c4a;
+    --color-gold: #e8b86d;
+    --color-gold-light: #f5d49a;
+    --color-cream: #f5f0e8;
+    --color-muted: #9a8c7a;
+    --color-subtle: rgba(245, 240, 232, 0.38);
+    --font-display: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", system-ui, -apple-system, sans-serif;
+    --font-number: "SF Mono", "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+    --font-motto: "KaiTi", "STKaiti", "Noto Serif SC", "SimSun", "PingFang SC", serif;
+  }
+
+  html { font-size: clamp(14px, 1vw + 8px, 18px); }
+  body {
+    font-family: var(--font-display);
+    background: var(--color-deep);
+    color: var(--color-cream);
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ===== Sky Canvas ===== */
+  .sky-layer {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 120% 60% at 50% 120%, rgba(120, 92, 74, 0.35) 0%, transparent 55%),
+      radial-gradient(ellipse 80% 50% at 50% 100%, rgba(232, 184, 109, 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 80% 30%, rgba(140, 120, 180, 0.06) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 20% 25%, rgba(100, 130, 180, 0.05) 0%, transparent 55%),
+      linear-gradient(180deg,
+        #0a0a1a 0%,
+        #0f0f2a 15%,
+        #111130 30%,
+        #1c1c4a 55%,
+        #2a1f3f 70%,
+        #3d2e5c 85%,
+        #4a3540 95%,
+        #5a3f38 100%
+      );
+  }
+
+  /* Subtle star-like dots */
+  .sky-layer::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 12% 8%, rgba(255,255,255,0.55) 0%, transparent 100%),
+      radial-gradient(1px 1px at 22% 18%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 35% 5%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 48% 12%, rgba(255,255,255,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 62% 7%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 14%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 9%, rgba(255,255,255,0.45) 0%, transparent 100%),
+      radial-gradient(2px 2px at 18% 22%, rgba(232,184,109,0.3) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 55% 3%, rgba(232,184,109,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 8% 28%, rgba(255,255,255,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 92% 25%, rgba(255,255,255,0.3) 0%, transparent 100%);
+  }
+
+  /* Horizon line glow */
+  .horizon {
+    position: fixed; bottom: 0; left: -5%; width: 110%; height: 35vh; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 100% at 50% 100%, rgba(232,184,109,0.18) 0%, rgba(180,140,70,0.06) 40%, transparent 70%),
+      linear-gradient(0deg,
+        rgba(120,90,60,0.15) 0%,
+        rgba(80,50,35,0.08) 30%,
+        transparent 60%
+      );
+    mask-image: linear-gradient(to top, black 0%, black 20%, transparent 80%);
+    -webkit-mask-image: linear-gradient(to top, black 0%, black 20%, transparent 80%);
+  }
+
+  /* ===== Floating Particles ===== */
+  .particles {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(232, 184, 109, 0.5);
+    animation: float-up linear infinite;
+    will-change: transform, opacity;
+  }
+  @keyframes float-up {
+    0%   { transform: translateY(105vh) scale(0); opacity: 0; }
+    10%  { opacity: 0.7; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+  }
+
+  /* ===== Main Container ===== */
+  .app {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100dvh;
+    padding: clamp(1.5rem, 4vw, 4rem) clamp(1rem, 5vw, 3rem);
+    gap: clamp(2rem, 5vh, 3.5rem);
+  }
+
+  /* ===== Header Section ===== */
+  .header {
+    text-align: center;
+    animation: fade-down 900ms var(--ease-out-expo) both;
+    animation-delay: 100ms;
+  }
+  @keyframes fade-down {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .header .label {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+    border: 1px solid rgba(232, 184, 109, 0.3);
+    border-radius: 9999px;
+    padding: 0.35em 1.4em;
+    margin-bottom: 1.2rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(232, 184, 109, 0.04);
+  }
+  .header h1 {
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.15;
+    color: var(--color-cream);
+  }
+  .header h1 .highlight {
+    color: var(--color-gold);
+    position: relative;
+  }
+
+  /* ===== Countdown Section ===== */
+  .countdown-grid {
+    display: flex;
+    gap: clamp(0.8rem, 2.5vw, 2rem);
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+  .countdown-item {
+    display: flex; flex-direction: column; align-items: center;
+    animation: fade-up 700ms var(--ease-out-expo) both;
+  }
+  .countdown-item:nth-child(1) { animation-delay: 250ms; }
+  .countdown-item:nth-child(2) { animation-delay: 350ms; }
+  .countdown-item:nth-child(3) { animation-delay: 450ms; }
+  .countdown-item:nth-child(4) { animation-delay: 550ms; }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .countdown-card {
+    position: relative;
+    width: clamp(70px, 16vw, 120px);
+    height: clamp(90px, 20vw, 148px);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: clamp(12px, 2vw, 20px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    overflow: hidden;
+    transition: border-color 400ms var(--ease-out-expo),
+                background 400ms var(--ease-out-expo);
+  }
+  .countdown-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(232,184,109,0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 400ms var(--ease-out-expo);
+  }
+  .countdown-card:hover {
+    border-color: rgba(232, 184, 109, 0.35);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .countdown-card:hover::before { opacity: 1; }
+
+  .countdown-card .number {
+    font-family: var(--font-number);
+    font-size: clamp(2rem, 5vw, 3.6rem);
+    font-weight: 600;
+    color: var(--color-cream);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .countdown-card .unit {
+    font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+    color: var(--color-subtle);
+    margin-top: 0.4em;
+    letter-spacing: 0.12em;
+  }
+  .countdown-separator {
+    font-family: var(--font-number);
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: rgba(245, 240, 232, 0.2);
+    font-weight: 300;
+    margin-top: -0.4em;
+  }
+
+  /* ===== Progress Bar ===== */
+  .progress-section {
+    width: 100%; max-width: 480px;
+    animation: fade-up 700ms var(--ease-out-expo) both;
+    animation-delay: 650ms;
+  }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 0.78rem; color: var(--color-muted);
+    margin-bottom: 0.5rem; letter-spacing: 0.05em;
+  }
+  .progress-track {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-gold), var(--color-gold-light));
+    border-radius: 9999px;
+    transform-origin: left;
+    transition: transform 1.2s var(--ease-out-expo);
+  }
+
+  /* ===== Motto Section ===== */
+  .motto-section {
+    text-align: center;
+    animation: fade-up 700ms var(--ease-out-expo) both;
+    animation-delay: 750ms;
+  }
+  .motto-section .motto {
+    font-family: var(--font-motto);
+    font-size: clamp(1.05rem, 2.2vw, 1.45rem);
+    color: var(--color-gold-light);
+    line-height: 1.8;
+    opacity: 0.8;
+    max-width: 36ch;
+    font-style: italic;
+  }
+  .motto-section .attribution {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    margin-top: 0.6rem;
+    letter-spacing: 0.08em;
+  }
+  .motto-dot {
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--color-gold);
+    margin: 0 0.5em;
+    opacity: 0.5;
+    animation: dot-pulse 2.2s ease-in-out infinite;
+  }
+  .motto-dot:nth-child(2) { animation-delay: 0.4s; }
+  .motto-dot:nth-child(3) { animation-delay: 0.8s; }
+  @keyframes dot-pulse {
+    0%, 100% { opacity: 0.25; transform: scale(0.8); }
+    50%      { opacity: 0.7; transform: scale(1.2); }
+  }
+
+  /* ===== Info Panel ===== */
+  .info-panel {
+    display: flex; gap: clamp(1rem, 3vw, 2.5rem);
+    flex-wrap: wrap; justify-content: center;
+    animation: fade-up 700ms var(--ease-out-expo) both;
+    animation-delay: 850ms;
+  }
+  .info-item {
+    text-align: center;
+    padding: 0.8rem 1.2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: border-color 300ms var(--ease-out-expo),
+                background 300ms var(--ease-out-expo);
+  }
+  .info-item:hover {
+    border-color: rgba(232, 184, 109, 0.2);
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .info-item .info-value {
+    font-family: var(--font-number);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-gold);
+    font-variant-numeric: tabular-nums;
+  }
+  .info-item .info-label {
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    margin-top: 0.25em;
+    letter-spacing: 0.06em;
+  }
+
+  /* ===== Footer ===== */
+  .footer {
+    text-align: center;
+    animation: fade-up 700ms var(--ease-out-expo) both;
+    animation-delay: 950ms;
+  }
+  .footer p {
+    font-size: 0.7rem;
+    color: rgba(245, 240, 232, 0.18);
+    letter-spacing: 0.08em;
+  }
+
+  /* ===== Accessibility: Reduced Motion ===== */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+    .particles { display: none; }
+  }
+
+  /* ===== Responsive: Small Screens ===== */
+  @media (max-width: 480px) {
+    .countdown-separator { display: none; }
+    .countdown-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      width: 100%;
+      max-width: 300px;
+    }
+    .countdown-card {
+      width: 100%; height: auto;
+      aspect-ratio: 1 / 1.15;
+    }
+    .info-panel { gap: 0.6rem; }
+    .info-item { padding: 0.6rem 0.9rem; }
+  }
+
+  /* ===== Responsive: Medium Screens ===== */
+  @media (min-width: 481px) and (max-width: 768px) {
+    .countdown-card {
+      width: clamp(75px, 18vw, 110px);
+      height: clamp(100px, 22vw, 140px);
+    }
+  }
+
+  /* ===== Hover Micro-interaction ===== */
+  .countdown-card:active { transform: scale(0.97); transition: transform 100ms var(--ease-out-expo); }
+
+  /* ===== Focus visible ===== */
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Sky Background -->
+<div class="sky-layer" aria-hidden="true"></div>
+<div class="horizon" aria-hidden="true"></div>
+
+<!-- Floating Particles -->
+<div class="particles" id="particles" aria-hidden="true"></div>
+
+<!-- Main App -->
+<main class="app" role="main" aria-label="高考倒计时">
+
+  <!-- Header -->
+  <header class="header">
+    <span class="label">高考倒计时</span>
+    <h1>
+      距离<span class="highlight">高考</span>还有
+    </h1>
+  </header>
+
+  <!-- Countdown -->
+  <section class="countdown-grid" aria-label="倒计时" role="timer" aria-live="polite">
+    <div class="countdown-item">
+      <div class="countdown-card">
+        <span class="number" id="days">--</span>
+        <span class="unit">天</span>
+      </div>
+    </div>
+    <span class="countdown-separator" aria-hidden="true">:</span>
+    <div class="countdown-item">
+      <div class="countdown-card">
+        <span class="number" id="hours">--</span>
+        <span class="unit">时</span>
+      </div>
+    </div>
+    <span class="countdown-separator" aria-hidden="true">:</span>
+    <div class="countdown-item">
+      <div class="countdown-card">
+        <span class="number" id="minutes">--</span>
+        <span class="unit">分</span>
+      </div>
+    </div>
+    <span class="countdown-separator" aria-hidden="true">:</span>
+    <div class="countdown-item">
+      <div class="countdown-card">
+        <span class="number" id="seconds">--</span>
+        <span class="unit">秒</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Progress -->
+  <section class="progress-section" aria-label="备考进度">
+    <div class="progress-label">
+      <span>备考进度</span>
+      <span id="progress-percent">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="transform: scaleX(0);"></div>
+    </div>
+  </section>
+
+  <!-- Motto -->
+  <section class="motto-section" aria-label="励志语录">
+    <p class="motto" id="motto-text">
+      <span class="motto-dot" aria-hidden="true"></span>
+      长风破浪会有时，直挂云帆济沧海
+      <span class="motto-dot" aria-hidden="true"></span>
+      <span class="motto-dot" aria-hidden="true"></span>
+    </p>
+    <p class="attribution">—— 李白《行路难》</p>
+  </section>
+
+  <!-- Info Panel -->
+  <section class="info-panel" aria-label="考试信息">
+    <div class="info-item">
+      <div class="info-value" id="total-days">--</div>
+      <div class="info-label">总天数</div>
+    </div>
+    <div class="info-item">
+      <div class="info-value" id="total-seconds">--</div>
+      <div class="info-label">总秒数</div>
+    </div>
+    <div class="info-item">
+      <div class="info-value" id="exam-date">6月7日</div>
+      <div class="info-label">考试日期</div>
+    </div>
+    <div class="info-item">
+      <div class="info-value" id="exam-year">2027</div>
+      <div class="info-label">考试年份</div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>愿你不负韶华，金榜题名</p>
+  </footer>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  // --- Config ---
+  const GAOKAO_MONTH = 6;
+  const GAOKAO_DAY = 7;
+  const GAOKAO_HOUR = 9;
+  const GAOKAO_MINUTE = 0;
+  const GAOKAO_SECOND = 0;
+
+  // --- Motto Pool ---
+  const mottos = [
+    { text: '长风破浪会有时，直挂云帆济沧海', attr: '李白《行路难》' },
+    { text: '宝剑锋从磨砺出，梅花香自苦寒来', attr: '《警世贤文》' },
+    { text: '千淘万漉虽辛苦，吹尽狂沙始到金', attr: '刘禹锡《浪淘沙》' },
+    { text: '不经一番寒彻骨，怎得梅花扑鼻香', attr: '黄蘖禅师《上堂开示颂》' },
+    { text: '会当凌绝顶，一览众山小', attr: '杜甫《望岳》' },
+    { text: '博观而约取，厚积而薄发', attr: '苏轼《稼说送张琥》' },
+    { text: '业精于勤荒于嬉，行成于思毁于随', attr: '韩愈《进学解》' },
+    { text: '天行健，君子以自强不息', attr: '《周易》' },
+    { text: '路漫漫其修远兮，吾将上下而求索', attr: '屈原《离骚》' },
+    { text: '志当存高远', attr: '诸葛亮《诫外生书》' },
+  ];
+
+  // --- DOM Refs ---
+  const elDays = document.getElementById('days');
+  const elHours = document.getElementById('hours');
+  const elMinutes = document.getElementById('minutes');
+  const elSeconds = document.getElementById('seconds');
+  const elProgressFill = document.getElementById('progress-fill');
+  const elProgressPercent = document.getElementById('progress-percent');
+  const elMottoText = document.getElementById('motto-text');
+  const elTotalDays = document.getElementById('total-days');
+  const elTotalSeconds = document.getElementById('total-seconds');
+  const elExamYear = document.getElementById('exam-year');
+
+  // --- Utility: Next Gaokao Date ---
+  function getNextGaokao(now) {
+    let year = now.getFullYear();
+    // June 7 of current year at 9:00 AM
+    let target = new Date(year, GAOKAO_MONTH - 1, GAOKAO_DAY, GAOKAO_HOUR, GAOKAO_MINUTE, GAOKAO_SECOND);
+    if (now >= target) {
+      year++;
+      target = new Date(year, GAOKAO_MONTH - 1, GAOKAO_DAY, GAOKAO_HOUR, GAOKAO_MINUTE, GAOKAO_SECOND);
+    }
+    return target;
+  }
+
+  // --- Utility: Pad Number ---
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  // --- Get a past Gaokao date for progress anchoring ---
+  function getAnchorDate(now) {
+    let year = now.getFullYear();
+    let target = new Date(year, GAOKAO_MONTH - 1, GAOKAO_DAY, GAOKAO_HOUR, GAOKAO_MINUTE, GAOKAO_SECOND);
+    if (now < target) {
+      // We're before this year's gaokao → anchor is last year's
+      return new Date(year - 1, GAOKAO_MONTH - 1, GAOKAO_DAY, GAOKAO_HOUR, GAOKAO_MINUTE, GAOKAO_SECOND);
+    }
+    // We're after → anchor is this year's
+    return target;
+  }
+
+  // --- Random Motto ---
+  function randomMotto() {
+    const m = mottos[Math.floor(Math.random() * mottos.length)];
+    const dots = '<span class="motto-dot" aria-hidden="true"></span>'.repeat(3);
+    elMottoText.innerHTML = dots + '\n' + m.text + '\n' + dots;
+    document.querySelector('.attribution').textContent = '—— ' + m.attr;
+  }
+
+  // --- Countdown Update ---
+  let lastDays = -1;
+
+  function updateCountdown() {
+    const now = new Date();
+    const target = getNextGaokao(now);
+    const anchor = getAnchorDate(now);
+
+    // Update year display
+    elExamYear.textContent = target.getFullYear();
+
+    // Total span in ms
+    const totalSpan = target - anchor;
+    const elapsed = now - anchor;
+    const progressRatio = Math.min(Math.max(elapsed / totalSpan, 0), 1);
+
+    // Diff
+    const diff = target - now;
+    if (diff <= 0) {
+      elDays.textContent = '00';
+      elHours.textContent = '00';
+      elMinutes.textContent = '00';
+      elSeconds.textContent = '00';
+      elProgressFill.style.transform = 'scaleX(1)';
+      elProgressPercent.textContent = '100%';
+      elTotalDays.textContent = '0';
+      elTotalSeconds.textContent = '0';
+      return;
+    }
+
+    const secTotal = Math.floor(diff / 1000);
+    const days = Math.floor(secTotal / 86400);
+    const hours = Math.floor((secTotal % 86400) / 3600);
+    const minutes = Math.floor((secTotal % 3600) / 60);
+    const seconds = secTotal % 60;
+
+    // Animate number change
+    function setWithPulse(el, value, formatted) {
+      if (el.textContent !== formatted) {
+        el.textContent = formatted;
+        el.style.transform = 'scale(1.08)';
+        el.style.transition = 'transform 100ms var(--ease-out-expo)';
+        requestAnimationFrame(() => {
+          el.style.transform = 'scale(1)';
+        });
+      }
+    }
+
+    setWithPulse(elDays, days, pad(days));
+    setWithPulse(elHours, hours, pad(hours));
+    setWithPulse(elMinutes, minutes, pad(minutes));
+    setWithPulse(elSeconds, seconds, pad(seconds));
+
+    // Progress
+    elProgressFill.style.transform = `scaleX(${progressRatio})`;
+    elProgressPercent.textContent = Math.round(progressRatio * 100) + '%';
+
+    // Total
+    elTotalDays.textContent = days;
+    elTotalSeconds.textContent = secTotal;
+
+    // On day change, maybe refresh motto
+    if (days !== lastDays) {
+      lastDays = days;
+      if (days % 7 === 0 || days === 100 || days === 50 || days === 30 || days === 10) {
+        randomMotto();
+      }
+    }
+  }
+
+  // --- Particles ---
+  function createParticles() {
+    const container = document.getElementById('particles');
+    const count = window.innerWidth < 480 ? 22 : window.innerWidth < 1024 ? 40 : 60;
+    const frag = document.createDocumentFragment();
+
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 2.5 + 1;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (Math.random() * 12 + 8) + 's';
+      p.style.animationDelay = (Math.random() * 10) + 's';
+      p.style.opacity = (Math.random() * 0.35 + 0.15).toString();
+      frag.appendChild(p);
+    }
+    container.appendChild(frag);
+  }
+
+  // --- Init ---
+  function init() {
+    const now = new Date();
+    const target = getNextGaokao(now);
+    elExamYear.textContent = target.getFullYear();
+
+    createParticles();
+    updateCountdown();
+    randomMotto();
+
+    // Update every 500ms — frequent enough for smooth second display,
+    // infrequent enough to avoid layout thrashing
+    setInterval(updateCountdown, 500);
+  }
+
+  // --- Start ---
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+</body>
+</html>
