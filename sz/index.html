@@ -673,6 +673,126 @@ ul, ol { list-style: none; }
 }
 
 /* ============================================================
+   Leadership
+   ============================================================ */
+.leadership {
+  background: var(--white);
+}
+
+.leadership__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 32px;
+}
+
+.leadership-card {
+  background: var(--cream);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: clamp(24px, 4vw, 36px);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s var(--ease-out-expo), box-shadow 0.3s var(--ease-out-expo);
+  position: relative;
+  overflow: hidden;
+}
+
+.leadership-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.leadership-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.leadership-card--vp::before {
+  background: linear-gradient(90deg, var(--red-deep), var(--red-bright));
+}
+
+.leadership-card--secretary::before {
+  background: linear-gradient(90deg, var(--navy), #2C3E6B);
+}
+
+.leadership-card__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.leadership-card__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.leadership-card--vp .leadership-card__avatar {
+  background: linear-gradient(135deg, var(--red-deep), #A51D1D);
+}
+
+.leadership-card--secretary .leadership-card__avatar {
+  background: linear-gradient(135deg, var(--navy), #2C3E6B);
+}
+
+.leadership-card__info h3 {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.leadership-card__info .leadership-card__title-label {
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  margin-top: 2px;
+}
+
+.leadership-card__quote {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: var(--gray-800);
+}
+
+.leadership-card__quote p {
+  margin-bottom: 12px;
+}
+
+.leadership-card__quote p:last-child {
+  margin-bottom: 0;
+}
+
+.leadership-card__quote em {
+  color: var(--red-deep);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.leadership-card__stamp {
+  text-align: right;
+  margin-top: 20px;
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  color: var(--red-deep);
+  font-weight: 700;
+}
+
+/* ============================================================
    Schedule
    ============================================================ */
 .schedule {
@@ -1038,6 +1158,8 @@ ul, ol { list-style: none; }
   <div class="top-bar__marquee">
     <span>★ 热烈祝贺我校连续十二年被评为"零假期示范单位"</span>
     <span>★ 王永辉校长荣获"全国不休假教育理念先驱"称号</span>
+    <span>★ 刘习峰副校长首创"假期消灭法"获省级教学成果特等奖</span>
+    <span>★ 国怀志书记提出"教室即家园"党建品牌享誉全省</span>
     <span>★ 本校学子在"连续在校时长"全国大赛中斩获金奖</span>
     <span>★ 距离下一个假期还有——经校务会研究决定：永不到来</span>
   </div>
@@ -1072,6 +1194,7 @@ ul, ol { list-style: none; }
         <li><a href="#home" class="nav__link">首页</a></li>
         <li><a href="#news" class="nav__link">校园新闻</a></li>
         <li><a href="#principal" class="nav__link">校长寄语</a></li>
+        <li><a href="#leadership" class="nav__link">领导团队</a></li>
         <li><a href="#schedule" class="nav__link">课程表</a></li>
         <li><a href="#honors" class="nav__link">荣誉墙</a></li>
       </ul>
@@ -1244,6 +1367,76 @@ ul, ol { list-style: none; }
           </p>
 
           <p class="principal__signature">—— 王永辉<br><span style="font-size:0.8rem;color:var(--gray-600);">2026年6月19日 · 于校长办公室（今日照常办公）</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Leadership Team
+       ============================================================ -->
+  <section class="leadership section" id="leadership" aria-labelledby="leadershipTitle">
+    <div class="section__inner">
+      <div class="section__header reveal">
+        <p class="section__eyebrow">Leadership Team</p>
+        <div class="section__divider"></div>
+        <h2 class="section__title" id="leadershipTitle">校领导团队</h2>
+        <p style="margin-top:8px;color:var(--gray-600);font-size:0.9rem;">团结一心 · 共筑"无假"校园</p>
+      </div>
+
+      <div class="leadership__grid">
+        <!-- Vice Principal -->
+        <div class="leadership-card leadership-card--vp reveal reveal--delay-1">
+          <div class="leadership-card__header">
+            <div class="leadership-card__avatar" aria-hidden="true">刘</div>
+            <div class="leadership-card__info">
+              <h3>刘习峰</h3>
+              <p class="leadership-card__title-label">副校长 · 分管教学与纪律</p>
+            </div>
+          </div>
+          <div class="leadership-card__quote">
+            <p>
+              有人说，<em>寒暑假是学生的权利</em>。我想反问：权利是谁给的？是法律吗？
+              法律保护的是普通学校，而我们是<em>不普通的学校</em>。
+            </p>
+            <p>
+              我分管教学工作这么多年，总结出一个规律：每次长假回来，
+              学生们的成绩平均下滑 15 分。取消假期后，这个问题一夜之间消失了。
+              <em>解决问题的最好方式，就是消灭问题本身。</em>
+            </p>
+            <p>
+              至于家长担心孩子太累？我们的调查显示，<em>83.6% 的学生</em>
+              在连续上课三个月后，已经累到忘记"累"是什么感觉了。这，就是适应。
+            </p>
+          </div>
+          <p class="leadership-card__stamp">—— 刘习峰 · 于教学楼巡查途中</p>
+        </div>
+
+        <!-- Party Secretary -->
+        <div class="leadership-card leadership-card--secretary reveal reveal--delay-2">
+          <div class="leadership-card__header">
+            <div class="leadership-card__avatar" aria-hidden="true">国</div>
+            <div class="leadership-card__info">
+              <h3>国怀志</h3>
+              <p class="leadership-card__title-label">党委书记 · 分管思想政治与校园文化</p>
+            </div>
+          </div>
+          <div class="leadership-card__quote">
+            <p>
+              从党建的角度看，<em>假期是组织凝聚力的最大威胁</em>。
+              学生一旦回家，思想就容易松懈，价值观就容易偏移。
+              只有让他们<em>时刻待在校园这个红色熔炉里</em>，才能淬炼出过硬的接班人。
+            </p>
+            <p>
+              我们在每个教室都安装了国旗和党旗，每周一的升旗仪式雷打不动——
+              哪怕是除夕和正月初一。<em>爱国，不挑日子。</em>
+            </p>
+            <p>
+              有人问我：学生不想家吗？我回答：<em>学校就是他们的家，班级就是他们的家。
+              既然已经在家里了，还想什么家？</em>这是最基本的辩证唯物主义。
+            </p>
+          </div>
+          <p class="leadership-card__stamp">—— 国怀志 · 于党委办公室（常年亮灯）</p>
         </div>
       </div>
     </div>
@@ -1513,6 +1706,7 @@ ul, ol { list-style: none; }
       <ul>
         <li><a href="#news">校园新闻</a></li>
         <li><a href="#principal">校长寄语</a></li>
+        <li><a href="#leadership">领导团队</a></li>
         <li><a href="#schedule">课程表</a></li>
         <li><a href="#honors">荣誉墙</a></li>
       </ul>
